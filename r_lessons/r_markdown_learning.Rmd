@@ -1,0 +1,89 @@
+---
+title: "Software Carpentry"
+author: "Thomas O'Leary"
+date: "8/30/2019"
+output: html_document
+---
+
+Here you can set the global stuff for the whole thing
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Largest Header
+## Second Largest Header
+### Third Largest Header
+#### Fourth Largest Header
+
+## Fancy formatting below
+**bold** and *italics* and ***bold and italics*** <u>underlined text</u>
+
+<--!comment-->
+
+```{r}
+2 + 2
+```
+
+```{r}
+library(ggplot2)
+
+gapminder <- read.csv("/Users/tsoleary/R/play/r_lessons/gapminder_data.csv")
+
+ggplot(data = gapminder, 
+       mapping = aes(x = gdpPercap, y = lifeExp,color = continent)) + 
+  geom_point(alpha = 0.5) + 
+  scale_x_log10() + 
+  geom_smooth(method='lm')
+```
+
+echo = FALSE -- not display code  
+eval = FALSE -- code won't run, ignore chunk entirely  
+warnings = FALSE -- not display warning  
+cache = TRUE -- if something is  
+fig.width =  
+fig.height =  
+fig cap = -- caption  
+
+```{r}
+x <- 7 * 3
+```
+
+This cool chunk is called an inline code so you can just put it out the 
+specific number `r x` in text itself
+
+There are a few packages out there to help pit out nicely formatted tables:  
+stargazers  
+xtable  
+kable  
+
+$$
+x^2 + 2
+$$
+
+## R Markdown
+
+
+Get the R MArkdown Cheatsheet too
+
+This is an R Markdown document. Markdown is a simple formatting syntax for 
+authoring HTML, PDF, and MS Word documents. For more details on using R 
+Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes 
+both content as well as the output of any embedded R code chunks within the 
+document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent 
+printing of the R code that generated the plot.

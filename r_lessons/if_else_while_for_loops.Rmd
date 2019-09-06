@@ -1,0 +1,138 @@
+---
+title: "Coding"
+author: "Thomas O'Leary"
+date: "8/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro to **if else** statements
+
+```{r if else statement}
+x <- 8
+if (x <= 10){
+  print("x is less than 10")
+} else if (x == 10){
+  print("x is 10")
+} else {
+  print("x is greater than 10")
+}
+```
+
+### Challenge:
+Use an if() statement to print a suitable message reporting whether there are 
+any records from the year 2002 in the gapminder dataset. Now do the same for 
+the year 2012.
+
+```{r challenge 1}
+gapminder <- read.csv("/Users/tsoleary/R/play/r_lessons/gapminder_data.csv")
+
+head (gapminder)
+
+if (sum(gapminder$year == 2002) > 0) {
+  num <- sum(gapminder$year == 2002)
+  print(paste("2002 is present", num, "times"), quote = T)
+} else {
+  print("2002 is not present", quote = FALSE)
+}
+
+if (sum(gapminder$year == 2012) > 0) {
+  print("2012 is present", quote = FALSE)
+} else {
+  print("2012 is not present", quote = FALSE)
+}
+
+```
+
+## Intro to **loops**
+
+### for loops
+```{r loops}
+for (i in 1:10){
+  print(i)
+}
+```
+```{r}
+for (i in 1:10){
+  print(i)
+}
+```
+
+
+
+```{r}
+ali <- 1
+while (ali <= 10){
+  for (comp in c("a", "b", "c")){
+    print(paste(ali, comp))
+  }
+  ali <- ali + 1
+}
+```
+
+### while loops
+while a certian condition is true it will perform a certain action. It is sorta
+as if for loops and if statements had a baby. It is great if you don't know 
+how long something is going to take. For example, if you want to do something
+until a population reaches a certain value, say one million. You may not know
+how long that is going to take but you want it to stop once it reaches there.
+
+```{r}
+# go only while z is greater than 0.1 so when it is less than 0.1 it will stop
+z <- 1
+while (z > 0.1) {
+  z <- runif(1) # unif is the uniform distribution and r is for random
+  print(z)
+}
+```
+
+
+## Intro to functions
+
+Let's try to make a function that converts fahrenheit to kelvin
+
+```{r}
+source("/Users/tsoleary/R/play/r_lessons/functions.R")
+
+f_to_k2(32)
+
+kelvin_to_fahr <- function(temp_k){
+  kelvin <- (temp_k - 273.15) * 9/5 + 32
+  return(kelvin)
+}
+
+kelvin_to_fahr(300)
+```
+
+# Final Challenge of the day
+
+Create a function that calculates a gdp of a population in the gapminder data
+
+```{r}
+calc_gdp <- function(row){
+  gapminder[row, "gdpPercap"] * gapminder[row, "pop"]
+}
+
+calc_gdp(1)
+
+# so to get crazy and get all of them you can run a for loop
+gdps <- NULL
+for (i in 1:nrow(gapminder)){
+  gdp <- calc_gdp(i)
+  gdps <- c(gdps, gdp)
+}
+
+head(gdps) # to see what the first 6 rows look like
+
+# so if you wanted to add that to the gapminder dataframe you could do something 
+# like this
+
+gapminder$gdp_total <- gdps
+
+head(gapminder) # new column should be present
+
+```
+
