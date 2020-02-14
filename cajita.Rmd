@@ -7,19 +7,19 @@ theme: lumen
 
 
 ### Mimi: Seymour Glass, a wooden bear, & getting spoiled rotten
-  - The saddest, most sympathetic stuffed dog in the world & his bear
-  - Mimi used to hand sew my halloween costumes: a big orange felt pumpkin & Bugs Bunny with big stuffed carrots. She kept me constantly stocked on twizzlers
+  - The most sympathetic stuffed dog in the world & his wooden bear comforted my Mimi when she needed it most
+  - Mimi used to hand sew my halloween costumes: a felt pumpkin & Bugs Bunny with stuffed carrots. She kept me stocked on twizzlers
   - She taught me unconditional love, kindness to strangers, and how to stand up for yourself
     
 ### Mom: Family, her notes, & loving with your whole heart
   - My mom never failed to be there for my sister and I when we were growing up -- everything she did was to keep us happy and healthy
-  - My mom writes little notes to me just about every time I visit home (only sometimes they take the form of a to-do)
+  - My mom writes little notes to me just about every time I visit home -- only _sometimes_ they take the form of a to-do
   - She embodies what it means to love with your whole heart
 
 ### Dad: Golf, juggling & the value of friendship
-  - My dad's world was on the golf course. He knew everyone's name and always greeted them with a hand shake and a laugh
+  - My dad's favorite place was the golf course. He knew everyone's name and always greeted them with a hand shake and a laugh
   - I remember watching, completely mesmerized, as my dad juggled beanie babies when I was a kid
-  - He had life-long friends and an amazing family
+  - He had many life-long friends and an amazing family
 
 ### Margaret: HP, the joys of childhood, & having someone on your team 
   - Always there to cheer me on and keep me up to date on the latest HP & Bernie memorabilia
@@ -27,8 +27,8 @@ theme: lumen
   - Forever a shoulder to lean on and an ear to listen
 
 ### Science, curiosity, & who I wanna be when I grow up
-  - I don't know if I totally know what kind of scientist I want to be
   - I know I'd like to be forever curious and perpetually learning. I'd like to work with others and teach
-  - And I know the kind of person that I want to be, thanks to the people that I am lucky to call friends and family
+  - I don't yet know what kind of path that will take
+  - But I do know the kind of person that I would like to be. Thanks to the people that I am lucky to call friends and family
   
   
