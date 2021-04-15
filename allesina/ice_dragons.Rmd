@@ -1,0 +1,103 @@
+---
+title: A Skeptic's Analysis of Scientific Writing
+author: "Team Ice Dragons"
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: true
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+# don't show echos, warnings or messages
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Load packages
+require(tidyverse)
+require(kableExtra)
+
+# Load data
+df <- read_csv("allesina/data/plos_compbio.csv")
+```
+
+Analysis of data for [Dr. Stefano Allesina's workshop: "A Skeptic's Guide to Scientific Writing."](https://stefanoallesina.github.io/QuEST_workshop/)
+
+# Taking a longer peek
+
+Dr. Allesina visualized some of the data in a time-series format [here](https://stefanoallesina.github.io/QuEST_workshop/#taking-a-peek). 
+
+These are just a few additions to those types of visualizations except now we are looking at the number of citations as a function of a few things for all articles regarless of year
+
+## Number of authors
+
+```{r}
+# Number of authors vs number of citations
+df %>%
+  filter(document_type == "Article") %>%
+  mutate(num_authors = case_when(num_authors < 9 ~ as.character(num_authors),
+                                 num_authors >= 9 ~ "9 or more")) %>%
+  ggplot(aes(x = num_authors, y = log(num_citations + 1))) +
+  geom_violin(fill = "azure2") +
+  geom_boxplot(width = 0.15) +
+  theme_classic()
+```
+
+## Number of countries
+
+```{r}
+# Num_countries vs. citations
+df %>%
+  filter(document_type == "Article") %>%
+  mutate(num_countries = case_when(num_countries < 9 ~ as.character(num_countries),
+                                   num_countries >= 9 ~ "9 or more")) %>%
+  ggplot(aes(x = num_countries, y = log(num_citations + 1))) +
+  geom_violin(fill = "azure2") +
+  geom_boxplot(width = 0.15) +
+  theme_classic()
+```
+
+## Number of countries
+
+```{r}
+# Num_countries vs. citations
+df %>%
+  filter(document_type == "Article") %>%
+  mutate(num_countries = case_when(num_countries < 9 ~ as.character(num_countries),
+                                   num_countries >= 9 ~ "9 or more")) %>%
+  ggplot(aes(x = num_countries, y = log(num_citations + 1))) +
+  geom_violin(fill = "azure2") +
+  geom_boxplot(width = 0.15) +
+  theme_classic()
+```
+
+# Correlations
+
+Melissa brought up an interesting question as to how related the number of veiws and citations are. Stefano mentioned that for some types of documents they may not be closely related at all.
+
+```{r}
+# Plot num_views vs. num_citations
+df %>%
+  ggplot() +
+  geom_point(aes(x = log(num_views + 1), 
+                 y = log(num_citations + 1)),
+             shape = 21, 
+             color = "grey50", 
+             alpha = 0.8)  +
+  facet_wrap(~ document_type) +
+  theme_classic()
+```
+
+```{r}
+# Plot num_views vs. num_citations
+df %>%
+  filter(document_type %in% c("Article", "Editorial", "Review")) %>%
+  ggplot() +
+  geom_point(aes(x = log(num_views + 1), 
+                 y = log(num_citations + 1)),
+             shape = 21, 
+             color = "grey50", 
+             alpha = 0.8)  +
+  facet_wrap(~ document_type) +
+  theme_classic()
+```
