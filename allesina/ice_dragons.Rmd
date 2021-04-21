@@ -9,30 +9,156 @@ output:
     toc_float: true
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 # don't show echos, warnings or messages
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE,
+                      comment = NA)
+
+
 
 # Load packages
 require(tidyverse)
-require(kableExtra)
+#require(stringi)
 
 # Load data
-df <- read_csv("allesina/data/plos_compbio.csv")
+df <- read_csv("https://raw.githubusercontent.com/StefanoAllesina/QuEST_workshop/main/data/plos_compbio.csv")
 ```
 
 Analysis of data for [Dr. Stefano Allesina's workshop: "A Skeptic's Guide to Scientific Writing."](https://stefanoallesina.github.io/QuEST_workshop/)
 
-# Taking a longer peek
 
-Dr. Allesina visualized some of the data in a time-series format [here](https://stefanoallesina.github.io/QuEST_workshop/#taking-a-peek). 
 
-These are just a few additions to those types of visualizations except now we are looking at the number of citations as a function of a few things for all articles regarless of year
 
-## Number of authors
+I think for the most part I am going to focus only on **Articles**.
+
+Dr. Allesina visualized some of the data in a time-series format [here](https://stefanoallesina.github.io/QuEST_workshop/#taking-a-peek). I think I am just going to look at the data regardless of time.
+
+
+# **Distributions**
+
+## Citations
 
 ```{r}
-# Number of authors vs number of citations
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = log(num_citations + 1))) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(log(df$num_citations + 1)), linetype = 2) +
+  theme_classic()
+```
+
+## Views
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = log(num_views + 1))) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(log(df$num_views + 1)), linetype = 2) +
+  theme_classic()
+```
+
+## Authors
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = num_authors)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$num_authors), linetype = 2) +
+  theme_classic()
+```
+
+
+## Figures
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = num_figures)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$num_figures), 
+             linetype = 2) +
+  annotate("text", 
+           label = paste("median =", median(df$num_figures)), 
+           y = 1000, 
+           x = median(df$num_figures)*2) +
+  theme_classic()
+```
+
+## Words in the abstract
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = num_words_abstract)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$num_words_abstract), 
+             linetype = 2) +
+  theme_classic()
+```
+
+## Words in the title 
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = num_words_title)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$num_words_title), 
+             linetype = 2) +
+  theme_classic()
+```
+
+## Words in the dictionary in the abstract
+
+Filtered out "0" values.
+
+```{r}
+df %>%
+  filter(document_type == "Article",
+         prop_words_abs > 0) %>%
+  ggplot(aes(x = prop_words_abs)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$prop_words_abs), 
+             linetype = 2) +
+  theme_classic()
+```
+
+## Simple words in the abstract
+
+Filtered out "0" values.
+
+```{r}
+df %>%
+  filter(document_type == "Article",
+         prop_simple_words_abs > 0) %>%
+  ggplot(aes(x = prop_simple_words_abs)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$prop_simple_words_abs), 
+             linetype = 2) +
+  theme_classic()
+```
+
+## References
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot(aes(x = num_references)) +
+  geom_histogram(fill = "grey90", color = "grey50") +
+  geom_vline(xintercept = median(df$num_references), 
+             linetype = 2) +
+  theme_classic()
+```
+
+# **Citations**
+
+## Authors
+
+```{r}
 df %>%
   filter(document_type == "Article") %>%
   mutate(num_authors = case_when(num_authors < 9 ~ as.character(num_authors),
@@ -43,10 +169,9 @@ df %>%
   theme_classic()
 ```
 
-## Number of countries
+## Countries
 
 ```{r}
-# Num_countries vs. citations
 df %>%
   filter(document_type == "Article") %>%
   mutate(num_countries = case_when(num_countries < 9 ~ as.character(num_countries),
@@ -57,10 +182,9 @@ df %>%
   theme_classic()
 ```
 
-## Number of countries
+## Equations
 
 ```{r}
-# Num_countries vs. citations
 df %>%
   filter(document_type == "Article") %>%
   mutate(num_countries = case_when(num_countries < 9 ~ as.character(num_countries),
@@ -71,7 +195,7 @@ df %>%
   theme_classic()
 ```
 
-# Correlations
+# **Correlation of views and citations**
 
 Melissa brought up an interesting question as to how related the number of veiws and citations are. Stefano mentioned that for some types of documents they may not be closely related at all.
 
@@ -101,3 +225,68 @@ df %>%
   facet_wrap(~ document_type) +
   theme_classic()
 ```
+
+# **How does the number of words in the title affect the number of citations?**
+
+## Visualize
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot() +
+  geom_point(aes(x = num_words_title, 
+                 y = log(num_citations + 1)),
+             shape = 21, 
+             color = "grey50", 
+             alpha = 0.8)  +
+  theme_classic()
+```
+
+## GLM
+
+```{r}
+dat <- df %>%
+  filter(document_type == "Article")
+
+fit <- glm(log(num_citations + 1) ~ num_words_title,
+           data = dat)
+
+summary(fit)
+
+print("p-value")
+coef(summary(fit))[,4]
+```
+
+# **Titles with ":"**
+
+```{r}
+dat <- df %>%
+  filter(document_type == "Article") %>%
+  mutate(colon = str_detect(title, ":"))
+
+print("Number of titles with a colon")
+sum(dat$colon)
+
+print("Proportion of titles with a colon")
+sum(dat$colon)/nrow(dat)
+```
+
+```{r}
+dat %>%
+  ggplot(aes(x = colon, y = log(num_citations + 1))) +
+  geom_violin(fill = "azure2") +
+  geom_boxplot(width = 0.15) +
+  theme_classic()
+```
+
+## Unique characters in the title
+
+```{r}
+all_titles <- paste(dat$title, collapse = " ")
+
+str_extract_all(all_titles, boundary("character"))%>% 
+  unlist() %>% 
+  as_tibble() %>% 
+  count(value)
+```
+
