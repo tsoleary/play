@@ -20,7 +20,6 @@ knitr::opts_chunk$set(echo = FALSE,
 
 # Load packages
 require(tidyverse)
-#require(stringi)
 
 # Load data
 df <- read_csv("https://raw.githubusercontent.com/StefanoAllesina/QuEST_workshop/main/data/plos_compbio.csv")
@@ -242,6 +241,22 @@ df %>%
   theme_classic()
 ```
 
+
+## Visualize by year
+
+```{r}
+df %>%
+  filter(document_type == "Article") %>%
+  ggplot() +
+  geom_point(aes(x = num_words_title, 
+                 y = log(num_citations + 1)),
+             shape = 21, 
+             color = "grey50", 
+             alpha = 0.8)  +
+  facet_wrap(~year) +
+  theme_classic()
+```
+
 ## GLM
 
 ```{r}
@@ -249,6 +264,22 @@ dat <- df %>%
   filter(document_type == "Article")
 
 fit <- glm(log(num_citations + 1) ~ num_words_title,
+           data = dat)
+
+summary(fit)
+
+print("p-value")
+coef(summary(fit))[,4]
+```
+
+
+## GLM year as factor
+
+```{r}
+dat <- df %>%
+  filter(document_type == "Article")
+
+fit <- glm(log(num_citations + 1) ~ as.factor(year) + num_words_title,
            data = dat)
 
 summary(fit)
@@ -290,3 +321,37 @@ str_extract_all(all_titles, boundary("character"))%>%
   count(value)
 ```
 
+# **By year**
+
+## Values
+
+```{r, fig.height = 10}
+ldat_by_year <- df %>%
+    filter(document_type == 'Article') %>%
+    select(-c(DOI, title, document_type)) %>%
+    drop_na %>%
+    pivot_longer(-year, 'score')
+
+ggplot(ldat_by_year, aes(year, value, col = score)) +
+    geom_point(alpha = .3) +
+    facet_wrap(~score, scales = 'free_y', ncol = 2) +
+    theme(legend.position = 'none')
+```
+
+## Variance
+```{r, fig.height = 10}
+semi_var <- function(x) {
+    expand.grid(x1 = x, x2 = x) %>%
+        pmap_dbl(~(.x - .y)^2) %>%
+        mean
+}
+
+vario <- ldat_by_year %>%
+    group_by(year, score) %>%
+    summarize(semi = semi_var(value))
+
+ggplot(vario, aes(year, semi, col = score)) +
+    geom_point() +
+    facet_wrap(~score, scales = 'free_y', ncol = 2) +
+    theme(legend.position = 'none')
+```
