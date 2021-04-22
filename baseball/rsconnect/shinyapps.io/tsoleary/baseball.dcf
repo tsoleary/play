@@ -1,0 +1,13 @@
+name: baseball
+title: baseball
+username:
+account: tsoleary
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3984902
+bundleId: 4484944
+url: https://tsoleary.shinyapps.io/baseball/
+when: 1618700821.38206
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: history_stats.html|history_stats.Rmd

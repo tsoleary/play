@@ -1,0 +1,299 @@
+---
+title: Baseball statistics
+author: "TS O'Leary"
+output:
+  rmarkdown::html_document:
+    theme: lumen
+    number_sections: false
+    toc: true
+    toc_float: true
+---
+
+
+```{r setup, include=FALSE}
+# Don't show echos, warnings, or messages
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Load packages
+require(tidyverse)
+require(Lahman)
+require(plotly)
+
+# Load data, filter to modern era AL & NL teams, & calc other stats ------------
+teams <- Teams %>% 
+  filter(yearID >= 1901 & 
+           lgID %in% c("AL", "NL")) %>%
+  group_by(yearID, teamID) %>%
+  mutate(TB = H + X2B + 2 * X3B + 3 * HR,
+         WinPct = W/G,
+         RpG = R/G,
+         RunDiff = R - RA,
+         HRpG = HR/G,
+         TBpG = TB/G,
+         SOpG = SO/G,
+         SFpG = SF/G,
+         `SO:BB` = SO/BB,
+         KpIP = SOA/(IPouts/3),
+         `HR:SO` = HR/SO,
+         BABIP = (H - HR) / (AB - HR - SO + SF),
+         WHIP = 3 * (H + BB)/IPouts)
+
+# Get batting stats
+Batting <- battingStats(data = Batting, 
+                        idvars = c("playerID", 
+                                   "yearID", 
+                                   "stint", 
+                                   "teamID", 
+                                   "lgID"), 
+                        cbind = TRUE)
+```
+
+
+# **All teams**
+
+## Runs scored per game
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(RpG = mean(RpG)) %>%
+  ggplot(aes(x = yearID, y = RpG)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Home runs per game
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(HRpG = mean(HRpG)) %>%
+  ggplot(aes(x = yearID, y = HRpG)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Strikeouts per game
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(SOpG = mean(SOpG, na.rm = TRUE)) %>%
+  ggplot(aes(x = yearID, y = SOpG)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Home Run to Strikeout ratio
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(`HR:SO` = mean(`HR:SO`, na.rm = TRUE)) %>%
+  ggplot(aes(x = yearID, y = `HR:SO`)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+
+## Ks per IP
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(KpIP = mean(KpIP, na.rm = TRUE)) %>%
+  ggplot(aes(x = yearID, y = KpIP)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Complete games
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(CG = sum(CG)) %>%
+  ggplot(aes(x = yearID, y = CG)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## ERA
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(ERA = mean(ERA)) %>%
+  ggplot(aes(x = yearID, y = ERA)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## Total bases per game
+
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(TBpG = mean(TBpG)) %>%
+  ggplot(aes(x = yearID, y = TBpG)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## Batting average on balls in play
+```{r}
+p <- teams %>%
+  group_by(yearID) %>%
+  summarise(BABIP = mean(BABIP)) %>%
+  ggplot(aes(x = yearID, y = BABIP)) +
+  geom_line() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+
+
+
+# **World Series Champions**
+
+## Runs scored per game
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = RpG, color = teamID)) +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Home runs per game
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = HRpG, color = teamID)) +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Strikeouts per game
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = SOpG, color = teamID)) +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Run differential
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = RunDiff, color = teamID)) +
+  theme(legend.position = "none") +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## Win percentage
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = WinPct, color = teamID)) +
+  theme(legend.position = "none") +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## Ks per IP
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = KpIP, color = teamID)) +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p)
+```
+
+## Complete games
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = CG, color = teamID)) +
+  theme(legend.position = "none") +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## ERA
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = ERA, color = teamID)) +
+  theme(legend.position = "none") +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+## Total bases per game
+
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = TBpG, color = teamID)) +
+  theme(legend.position = "none") +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
+
+
+## Batting average on balls in play
+```{r}
+p <- teams %>%
+  filter(WSWin == "Y") %>%
+  ggplot(aes(x = yearID, y = BABIP, color = teamID)) +
+  geom_point() +
+  theme_classic()
+
+ggplotly(p) 
+```
