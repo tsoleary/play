@@ -40,12 +40,12 @@ This is a quick introduction to the `tidyverse` for lab meeting. And because I a
 
 #### Core tidyverse
 
-- [`readr`](https://tsoleary.github.io/comp_bio/CheatSheets/readr.pdf) -- **import your data**. Need to import data? Noobs = `read.csv()`. Cool kids = `read_csv()`. ^[Ever had a column that is actually a integer import into R as a character? `readr` can easily define column types as you import, among other things.]
+- [`readr`](https://tsoleary.github.io/comp_bio/CheatSheets/readr.pdf) -- **import your data**. Need to import data? Cool kids = `read_csv()`. ^[Ever had a column that is actually a integer import into R as a character? `readr` can easily define column types as you import, among other things.]
 - [`tidyr`](https://tsoleary.github.io/comp_bio/CheatSheets/tidyr.pdf) -- **tidy your data**. Helps you tidy your data quick. What does tidy data mean? Keep reading...
 - `tibble` -- **a new data.frame** -- doesn't have a cheat sheet, just works in the shadows.
 - [`dplyr`](https://tsoleary.github.io/comp_bio/CheatSheets/dplyr.pdf) -- **wrangle your data**. Need to get a mean? Find a standard deviation? Look no further.
-- [`ggplot2`](https://tsoleary.github.io/comp_bio/CheatSheets/ggplot2.pdf) -- **plot your data** -- everyone uses ggplot.
-- [`stringr`](https://tsoleary.github.io/comp_bio/CheatSheets/stringr.pdf) -- **maipulate strings**. Have a bunch of strings for some fucking reason? Use `stringr`. 
+- [`ggplot2`](https://tsoleary.github.io/comp_bio/CheatSheets/ggplot2.pdf) -- **plot your data** -- you already know ggplot.
+- [`stringr`](https://tsoleary.github.io/comp_bio/CheatSheets/stringr.pdf) -- **maipulate strings**. Have a bunch of strings for some reason? Use `stringr`. 
 - [`purrr`](https://tsoleary.github.io/comp_bio/CheatSheets/purrr.pdf) -- **functional programming**. Wanna conserve energy like a cat? Replace `for()` with `map()`.
 - [`forcats`](https://tsoleary.github.io/comp_bio/CheatSheets/forcats.pdf) -- **manipulate factors**-- Using a bunch of factors? Reorder them with `forcats`.
 
