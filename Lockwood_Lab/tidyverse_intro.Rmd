@@ -1,0 +1,816 @@
+---
+title: "A quick welcome to the **tidyverse**"
+subtitle: "Lockwood Lab Meeting"
+date: "December 13, 2021"
+author: "TS O'Leary"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+    code_download: true
+    downcute_theme: "chaos"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      comment = NA, 
+                      message = FALSE,
+                      warning = FALSE,
+                      strip.white = FALSE)
+```
+
+# **Introduction**
+
+This is a quick introduction to the `tidyverse` for lab meeting. And because I am not the authority on these things -- here are a bunch of links that you may find more useful than following my ramblings.
+
+## Links 
+
+### Books & webpages
+
+ - [tidyverse website](https://www.tidyverse.org/) -- poke around this website and you can stumble on some good stuff
+ - [R for data science](https://r4ds.had.co.nz/index.html) -- a wonderfully thorough and useful book that emphasizes the tidyverse
+ - [R for Graduate Students](https://bookdown.org/yih_huynh/Guide-to-R-Book/) -- very accessible introduction to R & the tidyverse
+ - [The tidy tools manifesto](https://mran.microsoft.com/web/packages/tidyverse/vignettes/manifesto.html) -- who doesn't love a good manifesto? ^[My favorite part of the tidyverse is the final principle, which is: 4. Design for humans. "Programs must be written for people to read, and only incidentally for machines to execute." — Hal Abelson]
+ - [The tidyverse style guide](https://style.tidyverse.org/index.html) -- "Good coding style is like correct punctuation: you can manage without it, butitsuremakesthingseasiertoread." ^[Honestly I think that joke underestimates how important good coding style is. You can actually read "butitsuremakesthingseasiertoread" pretty easily because you are an expert reader -- you've been at it everyday for decades -- coding, probably not so much. I don't think can overstate how important I think it is to write visually pleasing code.]
+
+
+### Cheat sheets ^[Warning: I have downloaded these cheat sheets and saved them for my quick access, but they may not be the most current version of the cheat sheet.]
+
+
+#### Core tidyverse
+
+- [`readr`](https://tsoleary.github.io/comp_bio/CheatSheets/readr.pdf) -- **import your data**. Need to import data? Noobs = `read.csv()`. Cool kids = `read_csv()`. ^[Ever had a column that is actually a integer import into R as a character? `readr` can easily define column types as you import, among other things.]
+- [`tidyr`](https://tsoleary.github.io/comp_bio/CheatSheets/tidyr.pdf) -- **tidy your data**. Helps you tidy your data quick. What does tidy data mean? Keep reading...
+- `tibble` -- **a new data.frame** -- doesn't have a cheat sheet, just works in the shadows.
+- [`dplyr`](https://tsoleary.github.io/comp_bio/CheatSheets/dplyr.pdf) -- **wrangle your data**. Need to get a mean? Find a standard deviation? Look no further.
+- [`ggplot2`](https://tsoleary.github.io/comp_bio/CheatSheets/ggplot2.pdf) -- **plot your data** -- everyone uses ggplot.
+- [`stringr`](https://tsoleary.github.io/comp_bio/CheatSheets/stringr.pdf) -- **maipulate strings**. Have a bunch of strings for some fucking reason? Use `stringr`. 
+- [`purrr`](https://tsoleary.github.io/comp_bio/CheatSheets/purrr.pdf) -- **functional programming**. Wanna conserve energy like a cat? Replace `for()` with `map()`.
+- [`forcats`](https://tsoleary.github.io/comp_bio/CheatSheets/forcats.pdf) -- **manipulate factors**-- Using a bunch of factors? Reorder them with `forcats`.
+
+#### Other useful tidyverse packages 
+
+- `broom` -- **clean model output** -- technically a subpackage of `tidymodels` a cousin of the tidyverse
+- `rvest` -- **web scraping** -- mining data from a website
+- `modelr` -- **modelling** -- support for modelling data in the tidyverse
+
+## What is the `tidyverse`?
+
+A suite of inter-related packages with a common grammar and syntax. 
+
+```{r, eval = FALSE}
+# Install the tidyverse
+install.packages("tidyverse")
+
+# Install 
+install.packages("broom")
+```
+
+```{r}
+# Load library
+require(tidyverse)
+require(broom)
+```
+
+# **Tidy data**
+
+The tidyverse gets its name from the type of data that it is designed to interact with -- **tidy data**. So let's quickly define [tidy data](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html).
+
+1. Every column is a variable.
+2. Every row is an observation.
+3. Every cell is a single value.
+
+Yikes. That's abstract...
+
+## Messy data
+
+An example of some messy data.
+
+```{r}
+# Make up some random data
+mdh_df <- tibble(gill = rnorm(15, mean = 12, sd = 2),
+                 adductor = rnorm(15, mean = 18, sd = 2.5),
+                 mantle = rnorm(15, mean = 6, sd = 3))
+
+# Print the data
+mdh_df
+```
+
+## Let's tidy it
+```{r}
+mdh_df <- mdh_df %>%
+  pivot_longer(everything(),
+               names_to = "tissue",
+               values_to = "iu_gfw")
+
+mdh_df
+```
+
+**BAM**! That is tidy data. 1. Every column is a variable -- tissue and enzyme activity. 2. Every row is an observation -- enzyme activity in I.U./g f.w.. 3. Every cell is a single value.
+
+# **Importing data**
+
+## Why use `readr`?
+
+I find it a lot easier to define the data structure as you import data. And it creates a `tibble` instead of `data.frame`. 
+
+```{r}
+# Create a .csv file to import
+write_csv(iris, "iris.csv")
+```
+
+```{r}
+# Try read.csv
+d.f <- read.csv("iris.csv")
+
+str(d.f)
+```
+
+
+```{r}
+# Try read_csv
+read_csv("iris.csv")
+
+# Set col_type as you import data -- allows you to define level order too
+d_f <- read_csv("iris.csv",
+                col_types = list(Species = col_factor(c("versicolor",
+                                                        "setosa", 
+                                                        "virginica"))))
+d_f
+str(d_f)
+glimpse(d_f)
+```
+
+
+# **Wrangling data**
+
+## Intro to `dplyr`
+
+`dplyr` has a few core functions that are built to work on 
+
+Taken from the [`dplyr` vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html).
+
+
+### Rows
+
+- `filter()` chooses rows based on column values.
+- `slice()` chooses rows based on location.
+- `arrange()` changes the order of the rows.
+
+### Columns
+
+- `select()` changes whether or not a column is included.
+- `rename()` changes the name of columns.
+- `mutate()` changes the values of columns and creates new columns.
+- `relocate()` changes the order of the columns.
+
+### Groups of rows
+
+- `summarise()` collapses a group into a single row.
+
+## Pipe `%>%`
+
+From [`magrittr`](https://magrittr.tidyverse.org/index.html).
+
+- `x %>% f` is equivalent to `f(x)`
+- `x %>% f(y)` is equivalent to `f(x, y)`
+- `x %>% f %>% g %>% h` is equivalent to `h(g(f(x)))`
+
+The argument placeholder
+
+- `x %>% f(y, .)` is equivalent to `f(y, x)`
+- `x %>% f(y, z = .)` is equivalent to `f(y, z = x)`
+
+### A fun example from [R for data science](https://r4ds.had.co.nz/pipes.html)
+
+```{r, eval = FALSE}
+foo_foo <- little_bunny()
+foo_foo_1 <- hop(foo_foo, through = forest)
+foo_foo_2 <- scoop(foo_foo_1, up = field_mice)
+foo_foo_3 <- bop(foo_foo_2, on = head)
+```
+
+```{r, eval = FALSE}
+foo_foo %>%
+  hop(through = forest) %>%
+  scoop(up = field_mice) %>%
+  bop(on = head)
+```
+
+
+## `arrange`
+
+```{r}
+mdh_df %>%
+  arrange(tissue, iu_gfw)
+```
+
+```{r}
+mdh_df %>%
+  arrange(desc(tissue), desc(iu_gfw))
+```
+
+## `summarise`
+
+```{r}
+mdh_df %>%
+  summarise(iu_gfw_avg = mean(iu_gfw))
+```
+
+## `group_by`
+
+```{r}
+mdh_df %>%
+  group_by(tissue) %>%
+  summarise(iu_gfw_avg = mean(iu_gfw),
+            iu_gfw_sd = sd(iu_gfw))
+```
+
+Warning that you must be careful about the order when reusing variable names.
+
+```{r}
+# Bad order
+mdh_df %>%
+  group_by(tissue) %>%
+  summarise(iu_gfw = mean(iu_gfw),
+            sd = sd(iu_gfw))
+```
+
+
+```{r}
+# This order works because it collapses the data into a mean last
+mdh_df %>%
+  group_by(tissue) %>%
+  summarise(sd = sd(iu_gfw),
+            iu_gfw = mean(iu_gfw))
+```
+
+Print out a pretty table using `kableExtra`.
+
+```{r}
+mdh_df %>%
+  group_by(tissue) %>%
+  summarise(iu_gfw_avg = mean(iu_gfw),
+            iu_gfw_sd = sd(iu_gfw)) %>%
+  mutate(`I.U. / g f.w.` = paste(round(iu_gfw_avg, 2), 
+                                 "±", 
+                                 round(iu_gfw_sd, 2))) %>%
+  select(tissue, `I.U. / g f.w.`) %>%
+  rename("Tissue" = "tissue",
+         `MDH Activity (I.U. / g f.w.)` = `I.U. / g f.w.`) %>%
+  mutate(Tissue = str_to_sentence(Tissue)) %>%
+  kableExtra::kable()
+```
+
+## `nest`
+
+```{r}
+ChickWeight %>%
+  glimpse()
+```
+
+```{r}
+ChickWeight %>%
+  group_by(Chick, Diet) %>%
+  nest() 
+```
+
+```{r}
+ChickWeight_nest <- ChickWeight %>%
+  group_by(Chick, Diet) %>%
+  nest() 
+
+ChickWeight_nest$data[1:2]
+```
+
+## `broom`
+
+CHeck out the [`broom` vignette](https://cran.r-project.org/web/packages/broom/vignettes/broom.html).
+
+[And the `broom` and `dplyr` vignette] (https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html).
+
+`tidy`: constructs a tibble that summarizes the model’s statistical findings. This includes coefficients and p-values for each term in a regression, per-cluster information in clustering applications, or per-test information for multtest functions.
+
+`glance`: construct a concise one-row summary of the model. This typically contains values such as R^2, adjusted R^2, and residual standard error that are computed once for the entire model.
+
+
+```{r}
+ChickWeight %>%
+  group_by(Chick, Diet) %>%
+  nest() %>%
+  mutate(
+    fit = map(data, ~ lm(weight ~ Time, data = .x)),
+    tidied = map(fit, tidy),
+    glanced = map(fit, glance)
+  ) %>% 
+  unnest(tidied) 
+```
+
+
+```{r}
+ChickWeight %>%
+  ggplot() +
+  geom_line(aes(x = Time, 
+                 y = weight, 
+                 color = Chick)) +
+  facet_wrap(~ Diet)
+```
+
+
+
+# **Integrative example**
+
+```{r}
+# Import data -----
+
+# ADH activity
+adh_df <- read_csv("https://raw.githubusercontent.com/tsoleary/projects/master/ADH/data/biovision/adh_abs_11022020.csv")
+
+# NADH std curve
+nadh_df <- read_csv("https://raw.githubusercontent.com/tsoleary/projects/master/ADH/data/biovision/NADH_std_11022020.csv")
+```
+
+### NADH Std Curve
+
+```{r}
+nadh_df
+
+nadh_df <- nadh_df %>%
+  pivot_longer(cols = contains("min"), 
+               names_to = "mins", 
+               values_to = "abs") %>%
+  mutate(mins = as.numeric(str_remove_all(mins, "_min"))) 
+
+nadh_df
+```
+
+## Standard curve linear regression
+
+```{r}
+# Run linear model
+std_lm <- lm(abs ~ NADH, nadh_df)
+
+summary(std_lm)
+```
+
+```{r}
+# Save intercept & slope values
+int <- as.numeric(std_lm$coefficients[1])
+slope <- as.numeric(std_lm$coefficients[2])
+
+# Save values in a named vector
+std_curve_lm <- c(int = int, 
+                  slope = slope)
+
+std_curve_lm 
+```
+
+
+## Absorbance data
+```{r}
+# ADH activity absorbance data
+adh_df
+```
+
+### Tidy the data
+
+```{r}
+adh_df <- adh_df %>%
+  pivot_longer(cols = contains("min"), 
+               names_to = "mins", 
+               values_to = "abs") %>%
+  mutate(mins = as.numeric(str_remove_all(mins, "_min")))
+
+adh_df
+
+# Add temp data with some noise
+x <- adh_df %>%
+  mutate(temp = 23,
+         abs = abs*rnorm(160, mean = 0.9, sd = 0.02))
+
+adh_df <- bind_rows(adh_df, x)
+```
+
+## Plot the standard curve
+
+```{r}
+ggplot(data = nadh_df, 
+       aes(x = NADH, 
+           y = abs)) +
+  geom_smooth(method = 'lm', 
+              formula = y ~ x, 
+              se = FALSE) +
+  geom_point() +
+  ggpmisc::stat_poly_eq(formula = y ~ x, 
+                        aes(label = paste(..eq.label.., ..rr.label.., 
+                                          sep = "*\"; \"*")),
+                        parse = TRUE, 
+                        rr.digits = 5,
+                        label.x = 0.85, 
+                        label.y = "top") +
+  theme_classic() +
+  labs(y = "Absorbance @ 450 nm", 
+       x = "NADH (nmol)")
+```
+
+## Calculate enzyme activity
+
+```{r}
+adh_df <- adh_df %>%
+  group_by(temp, EtOH) %>%
+  mutate(nmol_NADH = (abs - std_curve_lm["int"]) / std_curve_lm["slope"],
+         deltaAbs = abs - abs[mins == 0],
+         deltaNADH = nmol_NADH - nmol_NADH[mins == 0],
+         deltaTime = mins - 0) %>%
+  filter(deltaTime != 0) %>%
+  mutate(dilution_factor = 150/sample_vol,
+         mU_mL = (deltaNADH/(deltaTime*(sample_vol/1000)))*dilution_factor) %>%
+  ungroup(EtOH) %>%
+  mutate(mU_mL = mU_mL - mU_mL[EtOH == 0])
+```
+
+## Calculating K<sub>m</sub>
+
+```{r}
+adh_df %>%
+  filter(mins <= 60) %>%
+  group_by(temp, EtOH) %>%
+  nest() %>%
+  mutate(
+    fit = map(data, ~ lm(abs ~ mins, data = .x)),
+    tidied = map(fit, tidy),
+    glanced = map(fit, glance)) 
+```
+
+```{r}
+adh_velo <- adh_df %>%
+  filter(mins <= 60) %>%
+  group_by(temp, EtOH) %>%
+  nest() %>%
+  mutate(
+    fit = map(data, ~ lm(abs ~ mins, data = .x)),
+    tidied = map(fit, tidy),
+    glanced = map(fit, glance)
+  ) %>% 
+  unnest(tidied) %>%
+  filter(term == "mins") %>%
+  select(temp, EtOH, estimate) %>%
+  rename(velocity = estimate) %>%
+  filter(EtOH != 0) %>%
+  arrange(temp, EtOH)
+```
+
+```{r}
+adh_mm <- adh_velo %>%
+  ungroup(EtOH) %>%
+  filter(EtOH != 0) %>%
+  group_by(temp) %>%
+  nest() %>%
+  mutate(
+    fit = map(data, ~ nls(formula = 
+                            velocity ~ SSmicmen(EtOH, Vmax, Km), data = .), 
+              data = .x),
+    tidied = map(fit, tidy)
+  ) %>%
+  unnest(tidied)
+
+adh_mm
+```
+
+## Plot
+
+```{r}
+adh_velo %>%
+  mutate(temp = as.factor(temp)) %>%
+  group_by(temp) %>%
+  ggplot(aes(x = EtOH,
+             y = velocity)) +
+  geom_smooth(method = "nls", 
+              aes(group = temp),
+              formula = y ~ SSmicmen(x, Vmax, Km),
+              color = "grey50",
+              data = adh_velo,
+              se = FALSE,
+              show.legend = FALSE) +
+  geom_point(aes(color = temp)) +
+  theme_classic()
+```
+
+# **Plotting data**
+
+## `ggplot2`
+
+Check out the [`ggplot2` book](https://ggplot2-book.org/index.html). 
+
+`ggplot2` creates things in a specific order of layers.
+
+
+```{r}
+glimpse(starwars)
+```
+
+```{r}
+starwars %>%
+  ggplot(aes(x = sex, y = height)) +
+  geom_point() +
+  geom_boxplot() +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  ggplot(aes(x = sex, y = height)) +
+  geom_boxplot() +
+  geom_point() +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  ggplot(aes(x = sex, y = height)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.2) +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  ggplot(aes(x = sex, y = height)) +
+  geom_hline(aes(yintercept = 188), 
+             linetype = 2, 
+             color = "grey20") +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.1, 
+              size = 2,
+              alpha = 0.8,
+              shape = 21, 
+              color = "grey20", 
+              fill = "grey50") +
+  scale_y_continuous(breaks = c(100, 150, 188, 200, 250),
+                     labels = c("100", "150", "Thomas", "200", "250"),
+                     name = "Height") +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  filter(sex %in% c("male", "female")) %>%
+  ggplot(aes(x = sex, y = height)) +
+  geom_violin(fill = "azure2",
+              color = "grey20") +
+  geom_boxplot(fill = "azure2",
+               width = 0.2,
+               color = "grey20") +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  filter(birth_year < 200) %>%
+  ggplot() +
+  geom_histogram(aes(x = birth_year), 
+                 binwidth = 10)
+```
+
+```{r}
+starwars %>%
+  filter(birth_year < 200) %>%
+  ggplot() +
+  geom_histogram(aes(x = birth_year),
+                 color = "grey20",
+                 fill = "grey50",
+                 binwidth = 10) +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  filter(birth_year < 200) %>%
+  ggplot() +
+  geom_histogram(aes(x = birth_year),
+                 color = "grey20",
+                 fill = "grey50",
+                 binwidth = 10) +
+  geom_density(aes(x = birth_year, 
+                   y =  10 * ..count..),
+               color = "grey20") +
+  ylab("count") +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  filter(mass < 1000) %>%
+  mutate(species_h = ifelse(species == "Human",  "Human", "Other")) %>%
+  ggplot() +
+  geom_point(aes(x = height, 
+                 y = mass, 
+                 fill = species_h),
+             size = 5,
+             alpha = 0.8,
+             color = "grey50",
+             shape = 21) +
+  theme_classic()
+```
+
+```{r}
+starwars %>%
+  filter(mass < 1000) %>%
+  mutate(species_h = ifelse(species == "Human",  "Human", "Other")) %>%
+  arrange(desc(species_h)) %>%
+  ggplot() +
+  geom_point(aes(x = height, 
+                 y = mass, 
+                 fill = species_h),
+             size = 5,
+             alpha = 0.8,
+             color = "grey50",
+             shape = 21) +
+  theme_classic()
+```
+
+
+```{r}
+starwars_h <- starwars %>%
+  filter(mass < 1000) %>%
+  mutate(species_h = ifelse(species == "Human",  "Human", "Other")) %>%
+  arrange(desc(species_h))
+
+
+p <- ggplot() +
+  geom_point(data = starwars_h %>%
+               filter(species_h != "Human"),
+             aes(x = height, 
+                 y = mass, 
+                 fill = species_h),
+             size = 1,
+             alpha = 0.8,
+             color = "grey50",
+             shape = 21) +
+    geom_point(data = starwars_h %>%
+               filter(species_h == "Human"),
+               aes(x = height, 
+                 y = mass, 
+                 fill = species_h),
+             size = 3,
+             alpha = 0.8,
+             color = "grey50",
+             shape = 21) +
+  scale_fill_manual(values = c("#d66666", "#222222")) +
+  theme_classic()
+
+p
+```
+
+```{r}
+plotly::ggplotly(p, text = "text")
+```
+
+```{r}
+
+friends <- c("Luke Skywalker", 
+             "Leia Organa",
+             "Han Solo",
+             "Chewbacca",
+             "C-3PO",
+             "R2-D2",
+             "Obi-Wan Kenobi")
+
+ggplot() +
+  geom_point(data = starwars_h, 
+             aes(x = height, 
+                 y = mass,
+                 fill = species_h),
+             size = 5,
+             alpha = 0.8,
+             color = "grey50",
+             shape = 21) +
+  ggrepel::geom_label_repel(data = starwars_h %>%
+                              filter(name %in% friends),
+                            aes(x = height, 
+                                y = mass,
+                                label = name),
+                            min.segment.length = 0.01) +
+  theme_classic()
+```
+
+These are some examples of plots that I have made in R.
+
+[ADH data](https://tsoleary.github.io/projects/ADH/scripts/adh_data_tso.html)
+
+[World Record Progression](https://tsoleary.github.io/track/world_record_progression/athletics_world_record_progression.html)
+
+# **Creating functions**
+
+Functions are extremely useful when you are doing repetive tasks. And greating
+
+Using [snippets](https://support.rstudio.com/hc/en-us/articles/204463668-Code-Snippets-in-the-RStudio-IDE) can help 
+
+For example when I type `mfun_snip` and hit `tab`, the following code prints out on my script. 
+
+```{r}
+# ------------------------------------------------------------------------------
+# Function: function_name
+# Description: description
+# Inputs: input_description
+# Outputs: output_description
+
+function_name <- function(args) {
+  # Function body
+  print("Hello world!")
+} 
+# End function -----------------------------------------------------------------
+```
+
+Which is made with the following code inserted into the snippets file. [This webpage](https://support.rstudio.com/hc/en-us/articles/204463668-Code-Snippets-in-the-RStudio-IDE) walks through the process of adding snippets.
+
+```
+snippet mfun_snip
+	# ------------------------------------------------------------------------------
+	# Function: ${1:function_name}
+	# Description: ${2:description}
+	# Inputs: ${3:input_description}
+	# Outputs: ${4:output_description}
+	
+	${1:function_name} <- function(args) {
+		# Function body
+		print("Hello world!")
+	} 
+	# End function -----------------------------------------------------------------
+```
+
+## Examples of functions
+
+```{r}
+# ------------------------------------------------------------------------------
+# Function: read_tidy_spec_csv
+# Description: uses read_csv and tidys the data
+# Inputs: .csv file 
+# Outputs: data.frame
+
+require(tidyverse)
+
+read_tidy_spec_csv <- function(file) {
+  
+  read_csv(file) %>%
+    pivot_longer(-c("cycle", "time", "temp"), 
+                 names_to = "conc_well", 
+                 values_to = "abs") %>%
+    mutate(conc = as.numeric(str_replace_all(conc_well, "_.", ""))) %>%
+    mutate(file = str_remove(file, ".csv")) %>%
+    separate(file, into = c("enzyme", "temp_group", "date"), sep = "_")
+  
+} 
+# End function -----------------------------------------------------------------
+```
+
+```{r}
+# ------------------------------------------------------------------------------
+# Function: calc_Km_Vm
+# Description: Calculate Vmax and Km for Michaelis–Menten curve
+# Inputs: tibble with velocity estimates for each conc and temp_group
+# Outputs: tibble with estimates for Vmax and Km
+
+require(tidyverse)
+require(broom)
+
+calc_Km_Vm <- function(data) {
+  data %>%
+    filter(conc != 0 & velocity > 0) %>%
+    group_by(enzyme, temp_group) %>%
+    nest() %>%
+    mutate(
+      fit = map(data, ~ nls(formula = 
+                              velocity ~ SSmicmen(conc, Vmax, Km), data = .), 
+                data = .x),
+      tidied = map(fit, tidy)
+    ) %>%
+    unnest(tidied) %>%
+    mutate(r.squared = map(fit, Rsq)) %>%
+    unnest(r.squared)
+} 
+# End function -----------------------------------------------------------------
+```
+
+```{r}
+# ------------------------------------------------------------------------------
+# Function: v_test
+# Description: calculate v from Hunter B. Fraser PNAS 2020 paper
+# Inputs: 
+#   var_par - variance of parents
+#   var_p1 - variance of parent 1
+#   var_p2 - variance of parent 2
+#   n_p1 - number of parent 1 individuals
+#   n_p2 - number of parent 2 individuals
+#   var_f2 - variance of f2 hybrids
+#   H2 - broad sense heritibility
+#   c
+# Outputs: v-test value
+
+v_test <- function(var_par, var_p1, var_p2, n_p1, n_p2, var_f2, H2, c) {
+  # Calculate the value of v
+  (var_par - var_p1/(4 * n_p1) - var_p2/(4 * n_p2)) / (var_f2 * H2 * c)
+} 
+# End function -----------------------------------------------------------------
+```
