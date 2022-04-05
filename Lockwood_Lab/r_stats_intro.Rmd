@@ -1,0 +1,258 @@
+---
+title: "A quick and dirty intro to stats in R"
+subtitle: "Helms Cahan & Lockwood Lab Meeting"
+date: "April 5, 2021"
+author: "TS O'Leary"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+    code_download: true
+    downcute_theme: "chaos"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      comment = NA, 
+                      message = FALSE,
+                      warning = FALSE,
+                      strip.white = FALSE)
+```
+
+
+# **Disclaimer!**
+
+Quick! Leave while you can! I don't know stats! But other people sure do! And the internet is full of those people -- and they seem like a helpful and kind bunch.
+
+Here are some links that will be of more use to you:
+
+## General R intro links
+
+ - [R for data science](https://r4ds.had.co.nz/index.html) -- a wonderfully thorough and useful book that emphasizes the tidyverse
+ - [R for Graduate Students](https://bookdown.org/yih_huynh/Guide-to-R-Book/) -- very accessible introduction to R & the tidyverse
+ 
+## Stats links
+
+ - [Learning Statistics with R](https://learningstatisticswithr.com/book/) -- there is also a [newer version](http://tidylsr.djnavarro.net/index.html) that is in development that emphasizes the tidyverse.
+ - [`survminer` vignette](https://rpkgs.datanovia.com/survminer/) -- survival curves in R
+ - [Game of Thrones survival](https://carpentries-incubator.github.io/r-survival-analysis/aio/index.html)
+ - [More survival in R](https://www.emilyzabor.com/tutorials/survival_analysis_in_r_tutorial.html)
+ - [ANOVA in R](https://statsandr.com/blog/anova-in-r/#introduction) -- stats for multi-factor experimental design
+ 
+
+## Data visualization 
+
+ - [The Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) -- great book on data viz
+ - [`ggplot2` book](https://ggplot2-book.org/) -- detailed intro to plotting with ggplot
+
+You have been warned that there is better resources out there. Continue at your own risk.
+
+# **Tom's stolen & unsolicited advice**
+ 
+1. **Stand on the shoulders of giants.** If Issac Newton did it, then it ain't cheating. Other people have probably tried something close to what you are about to do. Find it. Use it. Build on it.
+ 
+2. **Move fast and break things.** While perhaps a terrible motto for one of the most powerful companies ever created on this planet, it's not bad advice for coding. Just try stuff out. See what works. See what doesn't. Make it your own. Break it. Move on and try something else.
+ 
+3. **If you can dream it. You can do it.** Walt Disney -- or at least some guy that worked in marketing for Walt Disney's company after he died -- whatever... who cares? either way... Be creative. Think up your dream data analysis and visualization and make it happen. Sketch it out, erase it, and turn it into Mickey Mouse.
+
+4. **Whatever you do, do it with intention.** Embroidered throw pillow in my aunt's beach house. Think about your decisions and have a reason for each choice. Why this statistical analysis? Why this line of code? Why use this argument in this function? Why this package? Why this visualization? Why this color? Why this theme? Have an answer. Make deliberate choices.
+
+# **Stats in R**
+
+I like to use the `tidyverse` for everything. Check out [this intro](https://tsoleary.github.io/play/Lockwood_Lab/tidyverse_intro.html) that I made for the Lockwood Lab meeting, which also has a bunch of more helpful links to people smarter than me and they'll make you love R.
+
+```{r}
+# Load library
+require(tidyverse)
+```
+
+# **Statistics for multi-factor experimental design**
+
+```{r}
+ToothGrowth %>%
+  as_tibble()
+```
+
+
+```{r}
+ToothGrowth %>%
+  group_by(supp, dose) %>%
+  tally()
+```
+
+## Visualize data
+
+```{r}
+ToothGrowth %>%
+  mutate(dose = as.factor(dose)) %>%
+  ggplot(aes(x = supp, 
+             y = len, 
+             fill = dose),
+         color = "grey20") +
+  geom_boxplot(alpha = 0.75, 
+               outlier.shape = NA,
+               width = 0.5) +
+  geom_point(shape = 21,
+             alpha = 0.75,
+             size = 2,
+             position = position_jitterdodge(jitter.width = 0.1, 
+                                             dodge.width = 0.5)) +
+  scale_x_discrete(name = element_blank(),
+                   labels = c("Orange Juice", "Vitamin C")) +
+  scale_y_continuous(name = "Length (cm)",
+                     breaks = c(0,10,20,30)) +
+  scale_fill_manual(name = "Dose\n(mg/day)",
+                    values = c("grey90", "grey50", "grey10")) +
+  theme_classic(base_size = 14)
+```
+
+
+```{r}
+ToothGrowth %>%
+  mutate(dose = as.factor(dose)) %>%
+  ggplot(aes(x = supp, 
+             y = len, 
+             fill = dose),
+         color = "grey20") +
+  geom_boxplot(alpha = 0.75, 
+               outlier.shape = NA,
+               width = 0.5) +
+  ggbeeswarm::geom_beeswarm(shape = 21,
+             alpha = 0.75,
+             size = 2,
+             dodge.width = 0.5,
+             cex = 2) +
+  scale_x_discrete(name = element_blank(),
+                   labels = c("Orange Juice", "Vitamin C")) +
+  scale_y_continuous(name = "Length (cm)",
+                     breaks = c(0,10,20,30)) +
+  scale_fill_manual(name = "Dose\n(mg/day)",
+                    values = c("grey90", "grey50", "grey10")) +
+  theme_classic(base_size = 14)
+```
+
+## Testing assumptions
+
+Check out [this webpage](https://cran.r-project.org/web/packages/afex/vignettes/assumptions_of_ANOVAs.html) on testing the assumptions of ANOVAs.
+
+## Two-way ANOVA 
+
+```{r}
+mod <- aov(len ~ supp + dose + supp:dose, 
+           data = ToothGrowth %>%
+             mutate(dose = as.factor(dose)))
+
+summary(mod)
+```
+
+
+## **Post-hoc tests**
+
+```{r}
+mod_tukey <- TukeyHSD(mod)
+
+mod_tukey
+```
+
+```{r}
+mod_tukey$`supp:dose` %>%
+  as_tibble(rownames = "comp") %>%
+  filter(`p adj` < 0.01) %>%
+  arrange(`p adj`)
+```
+
+
+# **Survival Curves**
+
+```{r}
+library(survival)
+library(survminer)
+```
+
+Let's look at the Game of Thrones data taken from [here](https://carpentries-incubator.github.io/r-survival-analysis/17-example-dataset/index.html).
+
+```{r}
+got_surv <- read_csv(url("https://raw.githubusercontent.com/lauzikaite/r-novice-gapminder/gh-pages/_episodes_rmd/data/character_data_S01-S08.csv"))
+
+got_codes <- read_csv(url("https://raw.githubusercontent.com/lauzikaite/r-novice-gapminder/gh-pages/_episodes_rmd/data/encoding.csv"))
+```
+
+
+```{r}
+mod_surv <- survfit(Surv(exp_time_hrs, dth_flag) ~ 1, 
+                    data = got_surv)
+
+summary(mod_surv) 
+```
+
+## Plot it
+
+```{r}
+ggsurvplot(mod_surv, 
+           data = got_surv, 
+           surv.median.line = "hv", 
+           palette = "blue")
+```
+
+You can extract the data.frame from the model with `broom::tidy()`.
+
+```{r}
+mod_surv %>% 
+  broom::tidy()
+```
+
+Then you may have more control over the plotting.
+
+```{r}
+mod_surv %>% 
+  broom::tidy() %>%
+  ggplot(aes(x = time, y = estimate)) +
+  geom_point() +
+  geom_line()
+```
+
+And you can get info more easily.
+
+```{r}
+mod_surv %>% 
+  broom::tidy()  %>%
+  filter(time < 1) %>%
+  slice_max(time)
+```
+
+
+```{r}
+mod_surv <- survfit(Surv(exp_time_hrs, dth_flag) ~ sex, 
+                    data = got_surv)
+
+summary(mod_surv) 
+```
+
+
+```{r}
+ggsurvplot(mod_surv, 
+           data = got_surv, 
+           surv.median.line = "hv",
+           pval = TRUE)
+```
+
+```{r}
+mod_surv %>% 
+  broom::tidy()  %>%
+  group_by(strata) %>%
+  filter(time < 1) %>%
+  slice_max(time)
+```
+
+A faster way to get a bunch of them at the same time.
+
+```{r}
+summary(mod_surv, times = c(1, 10, 30))
+```
+
+The model print-out has the median survival times.
+
+```{r}
+mod_surv
+```
