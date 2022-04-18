@@ -1,0 +1,2 @@
+cd running/
+java -jar FitCSVTool.jar 03MAR2022.fit
