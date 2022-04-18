@@ -46,7 +46,7 @@ Here are some links that will be of more use to you:
  - [The Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) -- great book on data viz
  - [`ggplot2` book](https://ggplot2-book.org/) -- detailed intro to plotting with ggplot
 
-You have been warned that there are better resources out there. Continue at your own risk.
+You have been warned that there  better resources out there. Continue at your own risk.
 
 # **Tom's stolen & unsolicited advice**
  
@@ -85,26 +85,26 @@ ToothGrowth %>%
 
 ```{r}
 ToothGrowth %>%
-  mutate(dose = as.factor(dose)) %>%
-  ggplot(aes(x = supp, 
-             y = len, 
-             fill = dose),
+  #mutate(dose = as.factor(dose)) %>%
+  ggplot(aes(x = dose, 
+             y = len),
          color = "grey20") +
-  geom_boxplot(alpha = 0.75, 
+  geom_boxplot(aes(fill = dose), 
+               alpha = 0.75, 
                outlier.shape = NA,
                width = 0.5) +
   geom_point(shape = 21,
              alpha = 0.75,
-             size = 2,
-             position = position_jitterdodge(jitter.width = 0.1, 
-                                             dodge.width = 0.5)) +
+             size = 2) +
+  geom_line(method = "lm") +
   scale_x_discrete(name = element_blank(),
                    labels = c("Orange Juice", "Vitamin C")) +
   scale_y_continuous(name = "Length (cm)",
                      breaks = c(0,10,20,30)) +
   scale_fill_manual(name = "Dose\n(mg/day)",
                     values = c("grey90", "grey50", "grey10")) +
-  theme_classic(base_size = 14)
+  theme_classic(base_size = 14) +
+  facet_wrap(~ supp)
 ```
 
 
@@ -115,14 +115,15 @@ ToothGrowth %>%
              y = len, 
              fill = dose),
          color = "grey20") +
-  geom_boxplot(alpha = 0.75, 
-               outlier.shape = NA,
-               width = 0.5) +
   ggbeeswarm::geom_beeswarm(shape = 21,
              alpha = 0.75,
              size = 2,
              dodge.width = 0.5,
              cex = 2) +
+  geom_boxplot(alpha = 0.75, 
+               outlier.shape = NA,
+               width = 0.5) +
+
   scale_x_discrete(name = element_blank(),
                    labels = c("Orange Juice", "Vitamin C")) +
   scale_y_continuous(name = "Length (cm)",
@@ -157,7 +158,7 @@ mod_tukey
 
 ```{r}
 mod_tukey$`supp:dose` %>%
-  as_tibble(rownames = "comp") %>%
+  as_tibble(rownames = "comparison") %>%
   filter(`p adj` < 0.01) %>%
   arrange(`p adj`)
 ```
@@ -192,7 +193,8 @@ summary(mod_surv)
 ggsurvplot(mod_surv, 
            data = got_surv, 
            surv.median.line = "hv", 
-           palette = "blue")
+           palette = "blue",
+           ggtheme = theme_bw())
 ```
 
 You can extract the data.frame from the model with `broom::tidy()`.
@@ -216,14 +218,14 @@ And you can get info more easily.
 
 ```{r}
 mod_surv %>% 
-  broom::tidy()  %>%
+  broom::tidy() %>%
   filter(time < 1) %>%
   slice_max(time)
 ```
 
 
 ```{r}
-mod_surv <- survfit(Surv(exp_time_hrs, dth_flag) ~ sex, 
+mod_surv <- survfit(Surv(exp_time_hrs, dth_flag) ~ social_status, 
                     data = got_surv)
 
 summary(mod_surv) 
